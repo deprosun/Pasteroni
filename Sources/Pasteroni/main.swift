@@ -165,7 +165,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ n: Notification) {
         NSApp.setActivationPolicy(.accessory)
         item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        item.button?.image = NSImage(systemSymbolName: "doc.on.clipboard", accessibilityDescription: "Pasteroni")
+        if let url = Bundle.main.url(forResource: "menubar", withExtension: "png"), let img = NSImage(contentsOf: url) {
+            img.size = NSSize(width: 18, height: 18); img.isTemplate = true
+            item.button?.image = img
+        } else {
+            item.button?.image = NSImage(systemSymbolName: "doc.on.clipboard", accessibilityDescription: "Pasteroni")
+        }
         item.button?.target = self
         item.button?.action = #selector(statusClick)
         item.button?.sendAction(on: [.leftMouseUp, .rightMouseUp])

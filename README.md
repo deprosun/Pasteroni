@@ -1,3 +1,5 @@
+<p align="center"><img src="Assets/icon.svg" width="160" alt="Pasteroni mascot"></p>
+
 # Pasteroni
 
 A tiny, native clipboard history manager for the macOS menu bar. Written in Swift/AppKit/SwiftUI, no dependencies.

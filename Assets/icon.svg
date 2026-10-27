@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FF6B4A"/><stop offset="1" stop-color="#D62F2F"/>
+    </linearGradient>
+    <linearGradient id="noodle" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFE08A"/><stop offset="1" stop-color="#F5B83D"/>
+    </linearGradient>
+  </defs>
+  <rect x="40" y="40" width="944" height="944" rx="210" fill="url(#bg)"/>
+  <!-- noodle nest -->
+  <circle cx="512" cy="540" r="330" fill="url(#noodle)"/>
+  <g fill="none" stroke="#E2A02A" stroke-width="16" stroke-linecap="round" opacity="0.85">
+    <path d="M230 470 Q512 330 794 470"/>
+    <path d="M200 560 Q512 400 824 560"/>
+    <path d="M215 650 Q512 500 809 650"/>
+    <path d="M270 740 Q512 620 754 740"/>
+    <path d="M330 300 Q420 420 330 520 T360 790"/>
+    <path d="M700 300 Q610 420 700 520 T670 790"/>
+  </g>
+  <!-- sauce -->
+  <path d="M300 300 Q512 190 724 300 Q690 380 640 340 Q600 420 560 350 Q520 430 480 350 Q430 420 400 340 Q350 390 300 300Z" fill="#C8281E"/>
+  <ellipse cx="450" cy="285" rx="38" ry="14" fill="#F26B5B" opacity="0.7"/>
+  <!-- basil leaf -->
+  <path d="M555 270 Q610 190 690 215 Q670 295 555 270Z" fill="#3FA34D"/>
+  <path d="M560 268 Q620 245 675 225" stroke="#2C7A38" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <!-- face -->
+  <ellipse cx="410" cy="545" rx="38" ry="52" fill="#3B2314"/>
+  <ellipse cx="614" cy="545" rx="38" ry="52" fill="#3B2314"/>
+  <circle cx="423" cy="525" r="14" fill="#fff"/><circle cx="627" cy="525" r="14" fill="#fff"/>
+  <ellipse cx="340" cy="625" rx="46" ry="28" fill="#FF8A7A" opacity="0.65"/>
+  <ellipse cx="684" cy="625" rx="46" ry="28" fill="#FF8A7A" opacity="0.65"/>
+  <path d="M440 625 Q512 710 584 625 Q512 650 440 625Z" fill="#3B2314" stroke="#3B2314" stroke-width="14" stroke-linejoin="round"/>
+  <path d="M480 662 Q512 690 544 662 Q512 672 480 662Z" fill="#FF7B7B"/>
+  <!-- fork -->
+  <g transform="rotate(28 800 760)">
+    <rect x="780" y="720" width="40" height="230" rx="20" fill="#E8EDF2" stroke="#9AA7B4" stroke-width="8"/>
+    <path d="M745 560 h110 v110 q0 55 -55 60 q-55 -5 -55 -60Z" fill="#E8EDF2" stroke="#9AA7B4" stroke-width="8" stroke-linejoin="round"/>
+    <g stroke="#9AA7B4" stroke-width="8"><path d="M782 565 v95"/><path d="M818 565 v95"/></g>
+  </g>
+</svg>

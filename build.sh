@@ -3,7 +3,8 @@ set -e
 cd "$(dirname "$0")"
 swift build -c release
 APP=Pasteroni.app
-rm -rf $APP; mkdir -p $APP/Contents/MacOS
+rm -rf $APP; mkdir -p $APP/Contents/MacOS $APP/Contents/Resources
+cp Assets/AppIcon.icns Assets/menubar.png $APP/Contents/Resources/
 cp "$(swift build -c release --show-bin-path)/Pasteroni" $APP/Contents/MacOS/
 cat > $APP/Contents/Info.plist <<P
 <?xml version="1.0" encoding="UTF-8"?>
@@ -11,6 +12,7 @@ cat > $APP/Contents/Info.plist <<P
 <plist version="1.0"><dict>
 <key>CFBundleExecutable</key><string>Pasteroni</string>
 <key>CFBundleIdentifier</key><string>dev.pasteroni.app</string>
+<key>CFBundleIconFile</key><string>AppIcon</string>
 <key>CFBundleName</key><string>Pasteroni</string>
 <key>CFBundlePackageType</key><string>APPL</string>
 <key>CFBundleVersion</key><string>1</string>
