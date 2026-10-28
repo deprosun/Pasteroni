@@ -21,6 +21,12 @@ Requires macOS 13+ and Xcode command line tools.
 open Pasteroni.app
 ```
 
+To install into `/Applications` and launch it (also use this to update after changes):
+
+```sh
+./install.sh
+```
+
 History is stored in `~/Library/Application Support/Pasteroni/history.json` (plain text, unencrypted).
 
 ## License
