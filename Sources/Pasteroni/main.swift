@@ -66,6 +66,12 @@ final class Store: ObservableObject {
         save()
     }
     func update(_ c: Clip) { if let i = clips.firstIndex(where: { $0.id == c.id }) { clips[i] = c; save() } }
+    /// Move a clip to the front with a fresh timestamp, as it's now the latest thing on the clipboard.
+    func bump(_ c: Clip) {
+        guard let i = clips.firstIndex(where: { $0.id == c.id }) else { return }
+        var n = clips.remove(at: i); n.date = Date()
+        clips.insert(n, at: 0); save()
+    }
     func delete(_ c: Clip) { clips.removeAll { $0.id == c.id }; save() }
     func clearUnpinned() { clips.removeAll { !$0.pinned }; save() }
 
@@ -150,6 +156,11 @@ struct PanelView: View {
 
 final class Panel: NSPanel {
     override var canBecomeKey: Bool { true }
+    // Keys nobody handles would otherwise fall through to NSWindow and play the system beep.
+    override func keyDown(with event: NSEvent) {}
+    override func keyUp(with event: NSEvent) {}
+    override func cancelOperation(_ sender: Any?) {}
+    override func noResponder(for eventSelector: Selector) {}
 }
 
 // MARK: - App
@@ -161,6 +172,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     var lastCount = NSPasteboard.general.changeCount
     var previousApp: NSRunningApplication?
     var monitor: Any?
+    var restorePending = false
+    var pendingKeyCode = -1
+
+    func restoreFocus() {
+        guard restorePending else { return }
+        restorePending = false
+        panel.orderOut(nil); panel.alphaValue = 1
+        previousApp?.activate()
+    }
 
     func applicationDidFinishLaunching(_ n: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -186,7 +206,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in self?.poll() }
         registerHotKey()
-        monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] e in self?.key(e) ?? e }
+        monitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown, .keyUp]) { [weak self] e in self?.key(e) ?? e }
         NotificationCenter.default.addObserver(forName: NSWindow.didResignKeyNotification, object: panel, queue: .main) { [weak self] _ in self?.panel.orderOut(nil) }
     }
 
@@ -208,6 +228,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func showPanel(at point: NSPoint?) {
         previousApp = NSWorkspace.shared.frontmostApplication
+        restorePending = false; panel.alphaValue = 1
         store.query = ""; store.selection = store.visible.first?.id
         let loc = point ?? NSEvent.mouseLocation
         var o = NSPoint(x: loc.x - 190, y: loc.y - 460)
@@ -220,33 +241,46 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func key(_ e: NSEvent) -> NSEvent? {
-        guard panel.isKeyWindow else { return e }
+        if e.type == .keyUp, restorePending, Int(e.keyCode) == pendingKeyCode { restoreFocus(); return nil }
+        guard panel.isVisible else { return e }
+        if e.type == .keyUp { return [kVK_Escape, kVK_Return, kVK_ANSI_KeypadEnter, kVK_UpArrow, kVK_DownArrow].contains(Int(e.keyCode)) ? nil : e }
         switch Int(e.keyCode) {
         case kVK_DownArrow: store.move(1); return nil
         case kVK_UpArrow: store.move(-1); return nil
         case kVK_Return, kVK_ANSI_KeypadEnter:
-            if let c = store.visible.first(where: { $0.id == store.selection }) { delayed(c) }; return nil
-        case kVK_Escape: panel.orderOut(nil); return nil
+            if let c = store.visible.first(where: { $0.id == store.selection }) { paste(c, key: Int(e.keyCode)) }; return nil
+        case kVK_Escape:
+            dismiss(waitingFor: kVK_Escape)
+            return nil
         default: break
         }
         if e.modifierFlags.contains(.command), let ch = e.charactersIgnoringModifiers, let d = Int(ch) {
             let i = d == 0 ? 9 : d - 1
-            if i < store.visible.count { delayed(store.visible[i]) }
+            if i < store.visible.count { paste(store.visible[i], key: Int(e.keyCode)) }
             return nil
         }
         return e
     }
 
-    // Wait for the key to be released so the key-up isn't delivered to an app that never saw the key-down (which beeps).
-    func delayed(_ c: Clip) { DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { self.paste(c) } }
+    // Vanish instantly, but keep the window until the triggering key is released: ordering it out lets macOS
+    // hand focus to the other app immediately, and the key-up would reach it alone and beep.
+    func dismiss(waitingFor key: Int?) {
+        panel.alphaValue = 0
+        restorePending = true
+        if let key {
+            pendingKeyCode = key
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { self.restoreFocus() }
+        } else {
+            restoreFocus()
+        }
+    }
 
-    func paste(_ c: Clip) {
-        panel.orderOut(nil)
+    func paste(_ c: Clip, key: Int? = nil) {
         let pb = NSPasteboard.general
         pb.clearContents(); pb.setString(c.text, forType: .string)
         lastCount = pb.changeCount
-        var n = c; n.date = Date(); store.update(n)
-        previousApp?.activate()
+        store.bump(c)
+        dismiss(waitingFor: key)
     }
 
     func edit(_ c: Clip, _ rename: Bool) {
